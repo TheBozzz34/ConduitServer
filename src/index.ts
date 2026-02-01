@@ -1,48 +1,38 @@
 import dotenv from 'dotenv';
 import { TunnelServer } from './tunnelServer';
 import { APIServer } from './apiServer';
-import { ServerConfig } from './types';
 
 // Load environment variables
 dotenv.config();
 
-// Configuration
-const config: ServerConfig = {
-  port: parseInt(process.env.WS_PORT || '8080'),
-  minTunnelPort: parseInt(process.env.MIN_TUNNEL_PORT || '25600'),
-  maxTunnelPort: parseInt(process.env.MAX_TUNNEL_PORT || '25700'),
-  maxClients: parseInt(process.env.MAX_CLIENTS || '100'),
-  idleTimeout: parseInt(process.env.IDLE_TIMEOUT || '300000') // 5 minutes default
-};
+const WS_PORT = parseInt(process.env.WS_PORT || '8080');
+const API_PORT = parseInt(process.env.API_PORT || '3000');
+const ENABLE_API = process.env.ENABLE_API !== 'false';
 
 console.log('Starting Minecraft Tunnel Server...');
 console.log('Configuration:', {
-  wsPort: config.port,
-  tunnelPortRange: `${config.minTunnelPort}-${config.maxTunnelPort}`,
-  maxClients: config.maxClients,
-  idleTimeout: `${config.idleTimeout / 1000}s`
+  wsPort: WS_PORT,
+  apiPort: API_PORT,
+  apiEnabled: ENABLE_API
 });
 
-// Create servers
+// Create and start tunnel server
 const tunnelServer = new TunnelServer();
-const apiServer = new APIServer(
-  tunnelServer, 
-  parseInt(process.env.API_PORT || '3000')
-);
 
-// Start API server
-apiServer.start();
+// Optionally start API server for monitoring
+if (ENABLE_API) {
+  const apiServer = new APIServer(tunnelServer, API_PORT);
+  apiServer.start();
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully...');
-  tunnelServer.cleanup();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully...');
-  tunnelServer.shutdown();
   process.exit(0);
 });
 

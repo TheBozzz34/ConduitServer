@@ -110,6 +110,15 @@ export class TunnelServer {
     client.streams.forEach(s => s.destroy());
     this.clients.delete(clientId);
   }
+  public getStats() {
+    return {
+      connectedClients: this.clients.size,
+      clients: Array.from(this.clients.values()).map(c => ({
+        id: c.id,
+        activeStreams: c.streams.size
+      }))
+    };
+  }
 }
 
 new TunnelServer();
