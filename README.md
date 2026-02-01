@@ -1,11 +1,11 @@
-# Minecraft Tunnel Backend
+# Conduit Tunnel Backend
 
 A backend service that runs on a publicly accessible VPS to provide port tunneling for Minecraft servers, allowing players to host servers without port forwarding.
 
 ## Overview
 
 This system creates a tunnel between:
-1. **Plugin Client** - Runs on the player's Minecraft server (local machine)
+1. **Conduit Plugin** - Runs on the player's Minecraft server (local machine)
 2. **Tunnel Backend** - Runs on your VPS (this service)
 3. **Minecraft Players** - Connect to the VPS IP and assigned port
 
@@ -303,16 +303,3 @@ sudo kill -9 <PID>
 - Reduce `MAX_CLIENTS` in .env
 - Implement stricter cleanup of idle connections
 - Monitor with: `curl http://your-vps-ip:3000/status`
-
-## Next Steps
-
-After getting the backend running, you'll need to:
-
-1. **Develop the Minecraft plugin** that connects to this backend
-2. **Test the tunnel** with a local Minecraft server
-3. **Set up monitoring and alerting** for production use
-4. **Consider load balancing** for multiple VPS instances
-
-## License
-
-MIT
