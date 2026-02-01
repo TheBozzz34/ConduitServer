@@ -120,5 +120,3 @@ export class TunnelServer {
     };
   }
 }
-
-new TunnelServer();
