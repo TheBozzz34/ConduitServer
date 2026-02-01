@@ -24,7 +24,7 @@ console.log('Configuration:', {
 });
 
 // Create servers
-const tunnelServer = new TunnelServer(config);
+const tunnelServer = new TunnelServer();
 const apiServer = new APIServer(
   tunnelServer, 
   parseInt(process.env.API_PORT || '3000')
@@ -36,7 +36,7 @@ apiServer.start();
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully...');
-  tunnelServer.shutdown();
+  tunnelServer.cleanup();
   process.exit(0);
 });
 
