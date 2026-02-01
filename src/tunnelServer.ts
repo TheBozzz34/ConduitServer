@@ -118,24 +118,28 @@ export class TunnelServer {
     const server = net.createServer((socket) => {
       console.log(`TCP connection on port ${client.assignedPort} for client ${client.id}`);
       
-      // Forward data from Minecraft client to plugin
+      let isSocketClosed = false;
+      
+      // Forward data from Minecraft player to plugin via WebSocket
       socket.on('data', (data) => {
         if (client.ws.readyState === WebSocket.OPEN) {
           const message: TunnelMessage = {
             type: 'data',
-            data: data.toString('base64') // Convert to base64 for JSON transport
+            data: data.toString('base64')
           };
           client.ws.send(JSON.stringify(message));
+          console.log(`Forwarded ${data.length} bytes from player to plugin`);
         }
       });
 
-      // Handle plugin responses
+      // Handle plugin responses - forward back to Minecraft player
       const messageHandler = (wsData: Buffer) => {
         try {
           const message: TunnelMessage = JSON.parse(wsData.toString());
-          if (message.type === 'data' && message.data) {
-            const buffer = Buffer.isBuffer(message.data) ? message.data : Buffer.from(message.data, 'base64');
+          if (message.type === 'data' && typeof message.data === 'string' && !isSocketClosed) {
+            const buffer = Buffer.from(message.data, 'base64');
             socket.write(buffer);
+            console.log(`Forwarded ${buffer.length} bytes from plugin to player`);
           }
         } catch (error) {
           console.error('Error handling WebSocket data:', error);
@@ -146,16 +150,18 @@ export class TunnelServer {
 
       socket.on('close', () => {
         console.log(`TCP connection closed on port ${client.assignedPort}`);
+        isSocketClosed = true;
         client.ws.off('message', messageHandler);
       });
 
       socket.on('error', (error) => {
         console.error(`TCP socket error on port ${client.assignedPort}:`, error);
+        isSocketClosed = true;
         socket.destroy();
       });
     });
 
-    server.listen(client.assignedPort, () => {
+    server.listen(client.assignedPort, '0.0.0.0', () => {
       console.log(`TCP tunnel server listening on port ${client.assignedPort}`);
     });
 
