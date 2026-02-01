@@ -12,10 +12,15 @@ interface Client {
 export class TunnelServer {
   private wss = new WebSocketServer({ port: 8080 });
   private clients = new Map<string, Client>();
-  private nextPort = 40000;
+  private nextPort: number;
+  private minPort: number;
+  private maxPort: number;
 
-  constructor() {
-    console.log('Tunnel server started');
+  constructor(minPort: number = 40000, maxPort: number = 50000) {
+    this.minPort = minPort;
+    this.maxPort = maxPort;
+    this.nextPort = minPort;
+    console.log(`Tunnel server started on port range ${minPort}-${maxPort}`);
     
     this.wss.on('connection', ws => {
       const clientId = uuidv4();
