@@ -134,7 +134,7 @@ export class TunnelServer {
         try {
           const message: TunnelMessage = JSON.parse(wsData.toString());
           if (message.type === 'data' && message.data) {
-            const buffer = Buffer.from(message.data, 'base64');
+            const buffer = Buffer.isBuffer(message.data) ? message.data : Buffer.from(message.data, 'base64');
             socket.write(buffer);
           }
         } catch (error) {
